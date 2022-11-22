@@ -58,17 +58,18 @@ def american_data(elem, soup_html):
     # internet_ref = soup_html.find('div', class_='w-25 tr f6').text.split(' ')[2]
 
     # Collecting the current price
-    price_clean = soup_html.find('div', class_='product-priceR-component')['listprice'].split('$ ')[-1]
+    price_clean = soup_html.find('div', class_='component-content price-info')['listprice'].strip('$ ')
 
     # Collecting the image
-    url_img = soup_html.find('div', class_='component pdp-image-carousel '
-                                           'w100 pos-r').find('div', class_='item').find("img")['src']
+    url_img = soup_html.find('div', class_='product-carousel').find('div', class_='item productimage')\
+        .find("img")['src']
 
     # Stock Online
-    isonsale_flag = soup_html.find('div', class_='product-priceR-component')['isonsale']
-    if isonsale_flag == 'true':
+    unstock_flag = soup_html.find('div', class_='component cxa-addtocart-component')\
+        .find('div', class_='component-content out-stock-sv')
+    if unstock_flag is None:
         stock = 'Si'
-        consumer_price_clean = soup_html.find('div', class_='product-priceR-component')['adjustedprice'].split('$ ')[-1]
+        consumer_price_clean = soup_html.find('div', class_='component-content price-info')['adjustedprice'].strip('$ ')
     else:
         stock = 'No'
         consumer_price_clean = None
