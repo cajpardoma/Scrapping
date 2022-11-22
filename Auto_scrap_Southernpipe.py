@@ -8,7 +8,7 @@
 import datetime
 import os
 import time
-
+from urllib.parse import urlencode
 import numpy as np
 import pandas as pd
 import requests
@@ -35,6 +35,9 @@ NUM_RETRIES = 5
 
 # Waiting time between request
 delays = [1, 4, 8, 2, 5, 3]
+
+# Tell scraper to use Scraper API as the proxy
+API_KEY = 'd9d061ea3ad19b7f0eb56c83f416ba06'
 
 # Header for beautiful soup
 headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 '
@@ -66,16 +69,18 @@ def southernpipe_data(elem, soup_html):
     brand_name = elem["Fabricante"]
     product_name = elem["Short Name"]
     product_format = elem["Type"]
-
+    print(soup_html)
     # Collecting the sku
     # sku_ref = soup_html.find('div', class_='product-number').find('span', class_='itemNumber').text
-    internet_ref = soup_html.find('h2', class_='prodDetailTitle pageTitle clear').text.split()[1].strip()
+    internet_ref = soup_html.find('h2', class_='prodDetailTitle pageTitle clear')#.text.split()[1].strip()
 
     # Collecting the current price
-    price_clean = float(soup_html.find('span', {'class': 'addtocarttoseeprice'}).text.strip().strip('$'))
+    #price_clean = #float(soup_html.find('span', {'class': 'addtocarttoseeprice'})#.text.strip().strip('$'))
+    price_clean = soup_html.find('span', {'class': 'addtocarttoseeprice'})#.text.strip().strip('$'))
 
     # Collecting the image
-    url_img = soup_html.find('div', class_='imagWrap').find('div', class_='zoomWrapper').find('img')['src']
+    url_img = ""
+    #soup_html.find('div', class_='imagWrap').find('div', class_='zoomWrapper').find('img')['src']
 
     # Stock Online
     try:
@@ -119,6 +124,7 @@ for product_type, output_path in [[url_path_toilet, output_path_toilet]]:
     # Scrapping the information of every url
     data = []
     for index, elem in product_df.iterrows():
+        params = {'api_key': API_KEY, 'url': elem["Link"], "country_code": "us"}
         for i in range(NUM_RETRIES):
             # Random Wait between request
             delay = np.random.choice(delays)
@@ -127,8 +133,8 @@ for product_type, output_path in [[url_path_toilet, output_path_toilet]]:
                 # Selenium and wait for the page to load
                 driver.get(elem["Link"])
                 time.sleep(5)
-
-                response = requests.get(elem["Link"], headers=headers)
+                response = requests.get('http://api.scraperapi.com/', params=urlencode(params))
+                #response = requests.get(elem["Link"], headers=headers)
 
                 print("Intento numero {}".format(i))
                 print(response)
